@@ -123,6 +123,23 @@ spec:
                     HydraAdmin is the optional configuration to use for managing
                     this client
                   properties:
+                    apiKeySecretRef:
+                      description:
+                        ApiKeySecretRef is an object to define the secret which
+                        contains Ory Network API Key
+                      properties:
+                        key:
+                          description: Key of the secret for the API key
+                          type: string
+                        name:
+                          description: Name of the secret containing the API Key
+                          type: string
+                        namespace:
+                          description:
+                            Namespace of the secret if different from
+                            hydra-maester controller
+                          type: string
+                      type: object
                     endpoint:
                       description: |-
                         Endpoint is the endpoint for the hydra instance on which

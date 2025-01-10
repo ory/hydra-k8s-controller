@@ -49,6 +49,20 @@ type HydraAdmin struct {
 	// value "off" will force this to be off even if
 	// `--forwarded-proto` is specified
 	ForwardedProto string `json:"forwardedProto,omitempty"`
+
+	// ApiKeySecretRef is an object to define the secret which contains
+	// Ory Network API Key
+	ApiKeySecretRef ApiKeySecretRef `json:"apiKeySecretRef,omitempty"`
+}
+
+// ApiKeySecretRef contains Secret details for the API Key
+type ApiKeySecretRef struct {
+	// Name of the secret containing the API Key
+	Name string `json:"name,omitempty"`
+	// Key of the secret for the API key
+	Key string `json:"key,omitempty"`
+	// Namespace of the secret if different from hydra-maester controller
+	Namespace string `json:"namespace,omitempty"`
 }
 
 // TokenLifespans defines the desired token durations by grant type for OAuth2Client

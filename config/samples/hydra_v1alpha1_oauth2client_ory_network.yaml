@@ -1,0 +1,39 @@
+apiVersion: hydra.ory.sh/v1alpha1
+kind: OAuth2Client
+metadata:
+  name: my-oauth2-client
+  namespace: default
+spec:
+  grantTypes:
+    - client_credentials
+    - implicit
+    - authorization_code
+    - refresh_token
+  responseTypes:
+    - id_token
+    - code
+    - token
+    - code token
+    - code id_token
+    - id_token token
+    - code id_token token
+  scope: "read write"
+  secretName: my-secret-123
+  # these are optional
+  redirectUris:
+    - https://client/account
+    - http://localhost:8080
+  postLogoutRedirectUris:
+    - https://client/logout
+  audience:
+    - audience-a
+    - audience-b
+  hydraAdmin:
+    # if hydraAdmin is specified, all of these fields are requried,
+    # but they can be empty/0
+    url: https://foobar.projects.oryapis.com
+    endpoint: /admin/clients
+    port: 443
+    apiKeySecretRef:
+      name: ory_network_key
+  tokenEndpointAuthMethod: client_secret_basic
