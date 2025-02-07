@@ -42,4 +42,31 @@ func TestTypes(t *testing.T) {
 
 		assert.Equal(t, parsedClient.Scope, "scope1 scope2 scope3")
 	})
+
+	t.Run("Test having jwks uri", func(t *testing.T) {
+		c := hydrav1alpha1.OAuth2Client{
+			Spec: hydrav1alpha1.OAuth2ClientSpec{
+				JwksUri: "https://ory.sh/jwks.json",
+			},
+		}
+
+		var parsedClient, err = hydra.FromOAuth2Client(&c)
+		if err != nil {
+			assert.Fail(t, "unexpected error: %s", err)
+		}
+
+		assert.Equal(t, parsedClient.JwksUri, "https://ory.sh/jwks.json")
+	})
+
+	t.Run("Test jwks uri is required when token endpoint auth method is private_key_jwt", func(t *testing.T) {
+		c := hydrav1alpha1.OAuth2Client{
+			Spec: hydrav1alpha1.OAuth2ClientSpec{
+				TokenEndpointAuthMethod: "private_key_jwt",
+			},
+		}
+
+		var _, err = hydra.FromOAuth2Client(&c)
+
+		assert.ErrorContains(t, err, "JwksUri")
+	})
 }

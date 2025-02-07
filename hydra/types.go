@@ -6,6 +6,7 @@ package hydra
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/go-playground/validator/v10"
 	"strings"
 
 	"k8s.io/utils/ptr"
@@ -29,7 +30,7 @@ type OAuth2ClientJSON struct {
 	Owner                                      string          `json:"owner"`
 	TokenEndpointAuthMethod                    string          `json:"token_endpoint_auth_method,omitempty"`
 	Metadata                                   json.RawMessage `json:"metadata,omitempty"`
-	JwksUri                                    string          `json:"jwks_uri,omitempty"`
+	JwksUri                                    string          `json:"jwks_uri,omitempty" validate:"required_if=TokenEndpointAuthMethod private_key_jwt"`
 	FrontChannelLogoutSessionRequired          bool            `json:"frontchannel_logout_session_required"`
 	FrontChannelLogoutURI                      string          `json:"frontchannel_logout_uri"`
 	BackChannelLogoutSessionRequired           bool            `json:"backchannel_logout_session_required"`
@@ -77,7 +78,7 @@ func FromOAuth2Client(c *hydrav1alpha1.OAuth2Client) (*OAuth2ClientJSON, error) 
 		scope = strings.Trim(strings.Join(c.Spec.ScopeArray, " ")+" "+scope, " ")
 	}
 
-	return &OAuth2ClientJSON{
+	client := &OAuth2ClientJSON{
 		ClientName:                        c.Spec.ClientName,
 		GrantTypes:                        grantToStringSlice(c.Spec.GrantTypes),
 		ResponseTypes:                     responseToStringSlice(c.Spec.ResponseTypes),
@@ -90,6 +91,7 @@ func FromOAuth2Client(c *hydrav1alpha1.OAuth2Client) (*OAuth2ClientJSON, error) 
 		Owner:                             fmt.Sprintf("%s/%s", c.Name, c.Namespace),
 		TokenEndpointAuthMethod:           string(c.Spec.TokenEndpointAuthMethod),
 		Metadata:                          meta,
+		JwksUri:                           c.Spec.JwksUri,
 		FrontChannelLogoutURI:             c.Spec.BackChannelLogoutURI,
 		FrontChannelLogoutSessionRequired: c.Spec.BackChannelLogoutSessionRequired,
 		BackChannelLogoutSessionRequired:  c.Spec.BackChannelLogoutSessionRequired,
@@ -104,7 +106,14 @@ func FromOAuth2Client(c *hydrav1alpha1.OAuth2Client) (*OAuth2ClientJSON, error) 
 		RefreshTokenGrantAccessTokenLifespan:       c.Spec.TokenLifespans.RefreshTokenGrantAccessTokenLifespan,
 		RefreshTokenGrantIdTokenLifespan:           c.Spec.TokenLifespans.RefreshTokenGrantIdTokenLifespan,
 		RefreshTokenGrantRefreshTokenLifespan:      c.Spec.TokenLifespans.RefreshTokenGrantRefreshTokenLifespan,
-	}, nil
+	}
+
+	validate := validator.New()
+	if err := validate.Struct(client); err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }
 
 func responseToStringSlice(rt []hydrav1alpha1.ResponseType) []string {
